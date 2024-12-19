@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+
+    <div class="w-full max-w-lg bg-white shadow-xl rounded-lg p-6">
+        <!-- Model Selector -->
+        <div class="flex justify-between items-center mb-4">
+            <label for="modelSelector" class="text-xl font-semibold text-gray-800">Choose a Model:</label>
+            <select id="modelSelector" class="p-2 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                <option value="dalle">DALL-E 3</option>
+            </select>
+        </div>
+
+        <!-- Chatbox -->
+        <div class="space-y-4 mb-4 overflow-y-auto max-h-64 p-4 bg-gray-50 rounded-lg shadow-inner" id="chatBox">
+            <!-- Messages will go here -->
+        </div>
+
+        <!-- User Input -->
+        <div class="flex">
+            <input id="userInput" type="text" placeholder="Type your message..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <button id="sendButton" class="ml-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('sendButton');
+        const userInput = document.getElementById('userInput');
+        const chatBox = document.getElementById('chatBox');
+        const modelSelector = document.getElementById('modelSelector');
+
+        sendButton.addEventListener('click', async () => {
+            const message = userInput.value;
+            if (!message) return;
+
+            // Display user message
+            chatBox.innerHTML += `<div class="text-right text-gray-700 font-medium">${message}</div>`;
+            userInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const model = modelSelector.value;
+            let response;
+
+            // Handle different models
+            if (model === 'gpt-4o') {
+                response = await puter.ai.chat(message);
+            } else if (model === 'claude-3-5-sonnet') {
+                response = await puter.ai.chat(message, { model: 'claude-3-5-sonnet' });
+            } else if (model === 'dalle') {
+                response = await puter.ai.txt2img(message);
+                chatBox.innerHTML += `<img class="w-full rounded-lg" src="${response.src}" alt="Generated Image" />`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return;
+            }
+
+            // Display AI response
+            chatBox.innerHTML += `<div class="text-left text-gray-800 font-medium">${response.message.content[0].text}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // Optional: Allow user to press Enter to send the message
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
